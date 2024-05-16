@@ -1,0 +1,305 @@
+SONARQUBE INSTALLATION STEPS ON AMAZON LINUX 2
+<=============================================>
+
+Minimum 2 VCPU & 4 GB Memory
+.........................
+
+
+#yum update -y
+#sudo amazon-linux-extras install java-openjdk11 -y
+#java --version
+#useradd sonar
+cd /opt
+#wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-7.9.5.zip
+#ls
+#unzip sonarqube-7.9.5.zip
+ll
+#mv sonarqube-7.9.5 sonarqube 
+............Change owner permission............
+#chown -R sonar:sonar /opt/sonarqube/
+#chmod -R 775 /opt/sonarqube/
+#cd
+
+#vi /etc/systemd/system/sonar.service
+.............(copy the below the matter and paste)..............
+
+[Unit]
+Description=SonarQube service
+After=syslog.target network.target
+
+[Service]
+Type=forking
+
+ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+
+User=sonar
+Group=sonar
+Restart=always
+
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target
+
+
+#systemctl start sonar
+#systemctl enable sonar
+Check the sonarqube status to ensure it is running as expected.
+#systemctl status sonar
+
+..............(switch to sonar user)...........
+#su - sonar
+#cd /opt/sonarqube/bin/linux-x86-64/
+
+sh sonar.sh start
+sh sonar.sh status
+
+...........(access to web broweser)..........
+           #http://publicip:9000
+
+..............(sign in sonarqube).................
+login:admin
+password:admin
+..............................................
+ctrl+c
+exit
+.............................................................................
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<maven>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+sudo su
+cd /tmp
+sudo wget https://dlcdn.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
+sudo tar xf /tmp/apache-maven-*.tar.gz -C /opt
+sudo ln -s /opt/apache-maven-3.8.5 /opt/maven
+sudo vi /etc/profile.d/maven.sh
+.............(copy the below the matter)..............
+
+export JAVA_HOME=/usr/lib/jvm/jre-11-openjdk
+export M2_HOME=/opt/maven
+export MAVEN_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+.....................................................
+sudo chmod +x /etc/profile.d/maven.sh
+source /etc/profile.d/maven.sh
+mvn -version
+
+yum install git
+top
+
+<<<<<<<<<<<<<<<
+github.com
+login account ..
+sreevanik9666
+maven-web-application
+pom.xml
+edit file
+sonarqube home page copy the link 
+just like:-  http://3.236.158.160:9000
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>pom.xml<<<<<<<<<<<<<<<<<<<<<<<<<
+
+<properties>
+		<jdk.version>1.8</jdk.version>
+		<spring.version>5.1.2.RELEASE</spring.version>
+		<junit.version>4.11</junit.version>
+		<log4j.version>1.2.17</log4j.version>
+		<sonar.host.url>http://3.236.158.160:9000/</sonar.host.url>
+		<sonar.login>admin</sonar.login>
+		<sonar.password>admin</sonar.password>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+	</properties>
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+change commit message 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ctrl+c
+git clone https://github.com/sreevanik9666/maven-web-application
+cd maven-web-application
+ll (or) ls -la 
+mvn clean sonar:sonar
+top
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+*****************************************************
+
+NEXUS INSTALLATION STEPS ON AMAZON LINUX 2
+*****************************************************
+
+Minimum 1 VCPU & 2 GB Memory
+Server firewall opened for port 22 & 8081
+OpenJDK 8
+All Nexus processes should run as a non-root nexus user.
+.........................................................................................
+sudo yum update -y
+sudo yum install wget -y
+sudo yum install java-1.8.0-openjdk.x86_64 -y
+sudo mkdir /app && cd /app
+sudo wget -O nexus.tar.gz https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+sudo tar -xvf nexus.tar.gz
+sudo mv nexus-3* nexus
+sudo adduser nexus
+............(Change owner permission)............
+sudo chown -R nexus:nexus /app/nexus
+sudo chown -R nexus:nexus /app/sonatype-work
+sudo vi  /app/nexus/bin/nexus.rc
+.............(#run_as_user=""  showing just like and change the below like matter).............
+run_as_user="nexus"
+................................
+sudo vi /app/nexus/bin/nexus.vmoptions
+sudo vi /etc/systemd/system/nexus.service
+.............(copy the below the matter and paste)..............
+
+[Unit]
+Description=nexus service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+User=nexus
+Group=nexus
+ExecStart=/app/nexus/bin/nexus start
+ExecStop=/app/nexus/bin/nexus stop
+User=nexus
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+................................................
+sudo chkconfig nexus on
+sudo systemctl start nexus
+sudo systemctl status nexus
+
+top
+
+==================(access to web broweser)=============
+               public id :8081
+         showing the nexus loginpage 
+         copy the some type of wordes
+     /app/sonatype-work/nexus3/admin.password
+
+------------------------------------------
+ctrl+c
+#cat /app/sonatype-work/nexus3/admin.password
+...........(showing the password below and copy).............
+#top
+      .......(nexus login) .....
+             login:admin
+       password:paste password
+    AND changed the password:- admin123  
+         open the settings 
+      click the repositories
+    showing the maven-releases,maven-snapshots 
+   copy the links ....and save the links....
+
+http://52.205.203.139:8081/repository/maven-releases/
+
+http://52.205.203.139:8081/repository/maven-snapshots/
+    
+
+********************************************
+MAVEN INSTALLATION STEPS ON AMAZON LINUX 2
+***********************************************
+sudo su
+sudo yum update
+sudo amazon-linux-extras install java-openjdk11
+java --version
+cd /tmp
+sudo wget https://dlcdn.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
+sudo tar xf /tmp/apache-maven-*.tar.gz -C /opt
+sudo ln -s /opt/apache-maven-3.8.5 /opt/maven
+sudo vi /etc/profile.d/maven.sh
+.............(copy the below the matter and paste)..............
+
+export JAVA_HOME=/usr/lib/jvm/jre-11-openjdk
+export M2_HOME=/opt/maven
+export MAVEN_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+.....................................................
+sudo chmod +x /etc/profile.d/maven.sh
+source /etc/profile.d/maven.sh
+mvn -version
+yum install git
+top
+
+<<<<<<<<<<<<<<<
+github.com
+login account ..
+sreevanik9666
+maven-web-application
+pom.xml
+edit file
+nexus home page copy the link 
+just like:- 
+http://52.205.203.139:8081/repository/maven-releases/
+http://52.205.203.139:8081/repository/maven-snapshots/
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>pom.xml==find the nexes<<<<<<<<<<<<<<<<<<<<<<<<
+<distributionManagement>
+	
+	    <repository>
+	      <id>nexus</id>
+	      <name>Mithun Technologies Releases Nexus Repository</name>
+	      <url>http://52.205.203.139:8081/repository/maven-releases/</url>
+	    </repository>
+	    
+	    <snapshotRepository>
+	      <id>nexus</id>
+	      <name>Mithun Technologies Snapshot Nexus Repository </name>
+	      <url>http://52.205.203.139:8081/repository/maven-snapshots/</url>
+	    </snapshotRepository>
+	    
+	</distributionManagement>
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+change commit message 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ctrl+c
+git clone https://github.com/sreevanik9666/maven-web-application
+cd maven-web-application/
+ll
+mvn clean package
+
+.....(Building war: /root/maven-web-application/target/maven-web-application.war)
+ll
+cd target
+ll(.....showing the .war file.....)
+cd /opt/
+ll
+cd maven/
+ll
+cd conf/
+ll
+vi setting.xml 
+.....(edit the file)....find the server ......</server> ......befor ended below the matter type it...
+<server>
+ <id>nexus</id>
+ <username>admin</username>
+ <password>admin123</password>
+</server>
+
+
+#cd ..
+cd ..
+cd .. 
+cd /tmp/maven-web-application/
+ll
+mvn deploy
+top
+
+
+......(nexus login) .....
+               
+         refresh the page
+          click the browse
+    showing the maven-releases,maven-snapshots 
+   click the maven-snapshots and the showing the result...maven-snapshots 
+
+
+http://44.204.252.221:8081/repository/maven-releases/
+http://44.204.252.221:8081/repository/maven-snapshots/
